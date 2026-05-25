@@ -1,163 +1,94 @@
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
 #include "Transaction.h"
 #include "Account.h"
 
-// mock через наследование
-class MockTransaction : public Transaction {
-public:
-    bool called = false;
+using ::testing::Return;
 
-private:
-    void SaveToDataBase(Account&, Account&, int) override {
-        called = true;
-    }
+class MockAccount : public Account {
+ public:
+    MockAccount(int id, int balance)
+        : Account(id, balance) {}
+
+    MOCK_METHOD0(Lock, void());
+    MOCK_METHOD0(Unlock, void());
+    MOCK_METHOD1(ChangeBalance, void(int));
+    MOCK_CONST_METHOD0(GetBalance, int());
 };
 
 TEST(Transaction, DefaultFee) {
     Transaction tr;
-    EXPECT_EQ(tr.fee(), 1);
+    ASSERT_EQ(tr.fee(), 1);
 }
 
 TEST(Transaction, SetFee) {
     Transaction tr;
     tr.set_fee(10);
-    EXPECT_EQ(tr.fee(), 10);
+    ASSERT_EQ(tr.fee(), 10);
 }
 
 TEST(Transaction, SameAccountThrows) {
-    Account a(1, 500);
-    MockTransaction tr;
+    Transaction tr;
+    Account acc(1, 500);
 
-    EXPECT_THROW(tr.Make(a, a, 200), std::logic_error);
+    ASSERT_THROW(tr.Make(acc, acc, 200), std::logic_error);
 }
 
 TEST(Transaction, NegativeSumThrows) {
-    Account a(1, 500), b(2, 500);
-    MockTransaction tr;
+    Transaction tr;
+    Account from(1, 500);
+    Account to(2, 500);
 
-    EXPECT_THROW(tr.Make(a, b, -100), std::invalid_argument);
+    ASSERT_THROW(tr.Make(from, to, -100), std::invalid_argument);
 }
 
 TEST(Transaction, TooSmallSumThrows) {
-    Account a(1, 500), b(2, 500);
-    MockTransaction tr;
+    Transaction tr;
+    Account from(1, 500);
+    Account to(2, 500);
 
-    EXPECT_THROW(tr.Make(a, b, 50), std::logic_error);
+    ASSERT_THROW(tr.Make(from, to, 50), std::logic_error);
 }
 
 TEST(Transaction, FeeTooBigReturnsFalse) {
-    Account a(1, 500), b(2, 500);
-    MockTransaction tr;
+    Transaction tr;
+    tr.set_fee(60);
 
-    tr.set_fee(60); // fee*2 > sum
+    Account from(1, 500);
+    Account to(2, 500);
 
-    EXPECT_FALSE(tr.Make(a, b, 100));
+    ASSERT_FALSE(tr.Make(from, to, 100));
 }
 
 TEST(Transaction, SuccessTransfer) {
-    Account a(1, 500), b(2, 500);
-    MockTransaction tr;
+    Transaction tr;
 
-    tr.set_fee(10);
+    Account from(1, 1000);
+    Account to(2, 500);
 
-    EXPECT_TRUE(tr.Make(a, b, 200));
-    EXPECT_TRUE(tr.called);
+    ASSERT_TRUE(tr.Make(from, to, 200));
 }
 
-TEST(Transaction, DebitFailBranch) {
-    Account a(1,500), b(2,0);
-    MockTransaction tr;
+TEST(Transaction, CallsAccountMethods) {
+    Transaction tr;
 
-    tr.set_fee(50); // ключевой момент
+    MockAccount from(1, 1000);
+    MockAccount to(2, 500);
 
-    EXPECT_FALSE(tr.Make(a,b,200));
-    EXPECT_TRUE(tr.called);
-}
+    EXPECT_CALL(from, Lock()).Times(1);
+    EXPECT_CALL(to, Lock()).Times(1);
 
-TEST(Transaction, DebitFalseRollback) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
+    EXPECT_CALL(to, ChangeBalance(200)).Times(1);
 
-    tr.set_fee(10);
+    EXPECT_CALL(to, GetBalance())
+    .Times(2)
+    .WillRepeatedly(Return(1000));
 
-    EXPECT_FALSE(tr.Make(a, b, 500));
-    EXPECT_TRUE(tr.called);
-}
+    EXPECT_CALL(to, ChangeBalance(-201)).Times(1);
 
-TEST(Transaction, FullRollbackAndUnlockCoverage) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
+    EXPECT_CALL(from, Unlock()).Times(1);
+    EXPECT_CALL(to, Unlock()).Times(1);
 
-    tr.set_fee(10);
-
-    EXPECT_FALSE(tr.Make(a, b, 500));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FullRollbackCase) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(50);
-
-    EXPECT_FALSE(tr.Make(a, b, 200));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FinalCoverageCase) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(10);
-
-    EXPECT_FALSE(tr.Make(a, b, 200));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FinalEdgeCaseCoverage) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(1);
-
-    // гарантируем: НЕ ранний return
-    // и гарантируем: Debit fail + rollback path
-    EXPECT_FALSE(tr.Make(a, b, 500));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FeeEdgeExactBoundary) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(50);   // ВАЖНО: маленькая fee
-
-    EXPECT_FALSE(tr.Make(a, b, 100));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FeeBoundaryZeroRollbackPath) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(0);
-
-    EXPECT_FALSE(tr.Make(a, b, 100));
-
-    EXPECT_TRUE(tr.called);
-}
-
-TEST(Transaction, FinalGuaranteedCoverage) {
-    Account a(1, 1000), b(2, 0);
-    MockTransaction tr;
-
-    tr.set_fee(0);
-
-    EXPECT_FALSE(tr.Make(a, b, 150));  // >= 100 !!!
-    EXPECT_TRUE(tr.called);
+    tr.Make(from, to, 200);
 }

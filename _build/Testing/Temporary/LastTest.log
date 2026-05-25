@@ -1,35 +1,29 @@
-Start testing: May 05 15:45 MSK
+Start testing: May 25 15:47 MSK
 ----------------------------------------------------------
 1/1 Testing: check
 1/1 Test: check
 Command: "/home/ch1la/ch1la-bmstu/workspace/projects/lab05/_build/tests/check"
 Directory: /home/ch1la/ch1la-bmstu/workspace/projects/lab05/_build/tests
-"check" start time: May 05 15:45 MSK
+"check" start time: May 25 15:47 MSK
 Output:
 ----------------------------------------------------------
 Running main() from /home/ch1la/ch1la-bmstu/workspace/projects/lab05/third-party/gtest/googletest/src/gtest_main.cc
-[==========] Running 24 tests from 2 test cases.
+[==========] Running 13 tests from 2 test cases.
 [----------] Global test environment set-up.
-[----------] 8 tests from Account
+[----------] 5 tests from Account
 [ RUN      ] Account.Constructor
 [       OK ] Account.Constructor (0 ms)
 [ RUN      ] Account.ChangeBalanceThrowsIfNotLocked
-[       OK ] Account.ChangeBalanceThrowsIfNotLocked (1 ms)
+[       OK ] Account.ChangeBalanceThrowsIfNotLocked (0 ms)
 [ RUN      ] Account.ChangeBalanceWorksIfLocked
 [       OK ] Account.ChangeBalanceWorksIfLocked (0 ms)
 [ RUN      ] Account.DoubleLockThrows
 [       OK ] Account.DoubleLockThrows (0 ms)
 [ RUN      ] Account.UnlockWorks
 [       OK ] Account.UnlockWorks (0 ms)
-[ RUN      ] Account.ChangeBalanceThrowsDirectly
-[       OK ] Account.ChangeBalanceThrowsDirectly (0 ms)
-[ RUN      ] Account.DoubleLockThrowsCoverage
-[       OK ] Account.DoubleLockThrowsCoverage (0 ms)
-[ RUN      ] Account.ChangeBalanceUnlockedExceptionPath
-[       OK ] Account.ChangeBalanceUnlockedExceptionPath (0 ms)
-[----------] 8 tests from Account (1 ms total)
+[----------] 5 tests from Account (0 ms total)
 
-[----------] 16 tests from Transaction
+[----------] 8 tests from Transaction
 [ RUN      ] Transaction.DefaultFee
 [       OK ] Transaction.DefaultFee (0 ms)
 [ RUN      ] Transaction.SetFee
@@ -43,36 +37,32 @@ Running main() from /home/ch1la/ch1la-bmstu/workspace/projects/lab05/third-party
 [ RUN      ] Transaction.FeeTooBigReturnsFalse
 [       OK ] Transaction.FeeTooBigReturnsFalse (0 ms)
 [ RUN      ] Transaction.SuccessTransfer
+1 send to 2 $200
+Balance 1 is 1000
+Balance 2 is 499
 [       OK ] Transaction.SuccessTransfer (0 ms)
-[ RUN      ] Transaction.DebitFailBranch
-[       OK ] Transaction.DebitFailBranch (0 ms)
-[ RUN      ] Transaction.DebitFalseRollback
-[       OK ] Transaction.DebitFalseRollback (0 ms)
-[ RUN      ] Transaction.FullRollbackAndUnlockCoverage
-[       OK ] Transaction.FullRollbackAndUnlockCoverage (0 ms)
-[ RUN      ] Transaction.FullRollbackCase
-[       OK ] Transaction.FullRollbackCase (0 ms)
-[ RUN      ] Transaction.FinalCoverageCase
-[       OK ] Transaction.FinalCoverageCase (0 ms)
-[ RUN      ] Transaction.FinalEdgeCaseCoverage
-[       OK ] Transaction.FinalEdgeCaseCoverage (0 ms)
-[ RUN      ] Transaction.FeeEdgeExactBoundary
-[       OK ] Transaction.FeeEdgeExactBoundary (0 ms)
-[ RUN      ] Transaction.FeeBoundaryZeroRollbackPath
-[       OK ] Transaction.FeeBoundaryZeroRollbackPath (0 ms)
-[ RUN      ] Transaction.FinalGuaranteedCoverage
-[       OK ] Transaction.FinalGuaranteedCoverage (0 ms)
-[----------] 16 tests from Transaction (0 ms total)
+[ RUN      ] Transaction.CallsAccountMethods
+1 send to 2 $200
+Balance 1 is 
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: GetBalance()
+          Returns: 0
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/master/googlemock/docs/CookBook.md#knowing-when-to-expect for details.
+0
+Balance 2 is 1000
+[       OK ] Transaction.CallsAccountMethods (0 ms)
+[----------] 8 tests from Transaction (0 ms total)
 
 [----------] Global test environment tear-down
-[==========] 24 tests from 2 test cases ran. (1 ms total)
-[  PASSED  ] 24 tests.
+[==========] 13 tests from 2 test cases ran. (0 ms total)
+[  PASSED  ] 13 tests.
 <end of output>
-Test time =   0.01 sec
+Test time =   0.00 sec
 ----------------------------------------------------------
 Test Passed.
-"check" end time: May 05 15:45 MSK
+"check" end time: May 25 15:47 MSK
 "check" time elapsed: 00:00:00
 ----------------------------------------------------------
 
-End testing: May 05 15:45 MSK
+End testing: May 25 15:47 MSK
